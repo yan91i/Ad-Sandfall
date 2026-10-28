@@ -1,0 +1,285 @@
+{
+  "levels": [
+    {
+      "level": 1,
+      "trucks": 18,
+      "maxCapacity": 891,
+      "capacityConserved": true,
+      "directions": [
+        8,
+        7,
+        2,
+        1
+      ],
+      "initialBlocked": 14,
+      "visualOverlaps": 0,
+      "geometricallyClearable": true
+    },
+    {
+      "level": 2,
+      "trucks": 20,
+      "maxCapacity": 792,
+      "capacityConserved": true,
+      "directions": [
+        11,
+        1,
+        2,
+        6
+      ],
+      "initialBlocked": 14,
+      "visualOverlaps": 0,
+      "geometricallyClearable": true
+    },
+    {
+      "level": 3,
+      "trucks": 18,
+      "maxCapacity": 878,
+      "capacityConserved": true,
+      "directions": [
+        5,
+        2,
+        6,
+        5
+      ],
+      "initialBlocked": 11,
+      "visualOverlaps": 0,
+      "geometricallyClearable": true
+    },
+    {
+      "level": 4,
+      "trucks": 19,
+      "maxCapacity": 818,
+      "capacityConserved": true,
+      "directions": [
+        9,
+        6,
+        2,
+        2
+      ],
+      "initialBlocked": 13,
+      "visualOverlaps": 0,
+      "geometricallyClearable": true
+    },
+    {
+      "level": 5,
+      "trucks": 19,
+      "maxCapacity": 820,
+      "capacityConserved": true,
+      "directions": [
+        9,
+        3,
+        3,
+        4
+      ],
+      "initialBlocked": 10,
+      "visualOverlaps": 0,
+      "geometricallyClearable": true
+    },
+    {
+      "level": 6,
+      "trucks": 19,
+      "maxCapacity": 891,
+      "capacityConserved": true,
+      "directions": [
+        10,
+        3,
+        1,
+        5
+      ],
+      "initialBlocked": 15,
+      "visualOverlaps": 0,
+      "geometricallyClearable": true
+    },
+    {
+      "level": 7,
+      "trucks": 19,
+      "maxCapacity": 872,
+      "capacityConserved": true,
+      "directions": [
+        11,
+        5,
+        2,
+        1
+      ],
+      "initialBlocked": 13,
+      "visualOverlaps": 0,
+      "geometricallyClearable": true
+    },
+    {
+      "level": 8,
+      "trucks": 18,
+      "maxCapacity": 839,
+      "capacityConserved": true,
+      "directions": [
+        12,
+        5,
+        1,
+        0
+      ],
+      "initialBlocked": 15,
+      "visualOverlaps": 0,
+      "geometricallyClearable": true
+    },
+    {
+      "level": 9,
+      "trucks": 18,
+      "maxCapacity": 866,
+      "capacityConserved": true,
+      "directions": [
+        12,
+        4,
+        0,
+        2
+      ],
+      "initialBlocked": 14,
+      "visualOverlaps": 0,
+      "geometricallyClearable": true
+    },
+    {
+      "level": 10,
+      "trucks": 18,
+      "maxCapacity": 865,
+      "capacityConserved": true,
+      "directions": [
+        7,
+        7,
+        4,
+        0
+      ],
+      "initialBlocked": 11,
+      "visualOverlaps": 0,
+      "geometricallyClearable": true
+    },
+    {
+      "level": 11,
+      "trucks": 19,
+      "maxCapacity": 842,
+      "capacityConserved": true,
+      "directions": [
+        8,
+        9,
+        1,
+        1
+      ],
+      "initialBlocked": 13,
+      "visualOverlaps": 0,
+      "geometricallyClearable": true
+    },
+    {
+      "level": 12,
+      "trucks": 18,
+      "maxCapacity": 887,
+      "capacityConserved": true,
+      "directions": [
+        10,
+        2,
+        3,
+        3
+      ],
+      "initialBlocked": 12,
+      "visualOverlaps": 0,
+      "geometricallyClearable": true
+    },
+    {
+      "level": 13,
+      "trucks": 18,
+      "maxCapacity": 896,
+      "capacityConserved": true,
+      "directions": [
+        9,
+        2,
+        3,
+        4
+      ],
+      "initialBlocked": 11,
+      "visualOverlaps": 0,
+      "geometricallyClearable": true
+    },
+    {
+      "level": 14,
+      "trucks": 19,
+      "maxCapacity": 790,
+      "capacityConserved": true,
+      "directions": [
+        14,
+        1,
+        1,
+        3
+      ],
+      "initialBlocked": 12,
+      "visualOverlaps": 0,
+      "geometricallyClearable": true
+    },
+    {
+      "level": 15,
+      "trucks": 19,
+      "maxCapacity": 894,
+      "capacityConserved": true,
+      "directions": [
+        13,
+        4,
+        1,
+        1
+      ],
+      "initialBlocked": 13,
+      "visualOverlaps": 0,
+      "geometricallyClearable": true
+    },
+    {
+      "level": 16,
+      "trucks": 18,
+      "maxCapacity": 868,
+      "capacityConserved": true,
+      "directions": [
+        7,
+        5,
+        1,
+        5
+      ],
+      "initialBlocked": 14,
+      "visualOverlaps": 0,
+      "geometricallyClearable": true
+    },
+    {
+      "level": 17,
+      "trucks": 19,
+      "maxCapacity": 862,
+      "capacityConserved": true,
+      "directions": [
+        8,
+        5,
+        3,
+        3
+      ],
+      "initialBlocked": 13,
+      "visualOverlaps": 0,
+      "geometricallyClearable": true
+    },
+    {
+      "level": 18,
+      "trucks": 19,
+      "maxCapacity": 837,
+      "capacityConserved": true,
+      "directions": [
+        8,
+        7,
+        0,
+        4
+      ],
+      "initialBlocked": 14,
+      "visualOverlaps": 0,
+      "geometricallyClearable": true
+    }
+  ],
+  "blockedRejected": true,
+  "dispatch": true,
+  "undo": true,
+  "errors": [],
+  "responsive": {
+    "320": true,
+    "390": true,
+    "768": true,
+    "1440": true
+  },
+  "fullPlaythroughVerified": false
+}
