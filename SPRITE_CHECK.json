@@ -1,0 +1,314 @@
+[
+  {
+    "file": "red-left.png",
+    "size": [
+      374,
+      198
+    ],
+    "alpha_bbox": [
+      12,
+      12,
+      362,
+      186
+    ]
+  },
+  {
+    "file": "red-down.png",
+    "size": [
+      170,
+      209
+    ],
+    "alpha_bbox": [
+      12,
+      12,
+      158,
+      197
+    ]
+  },
+  {
+    "file": "red-right.png",
+    "size": [
+      362,
+      198
+    ],
+    "alpha_bbox": [
+      12,
+      12,
+      350,
+      186
+    ]
+  },
+  {
+    "file": "red-up.png",
+    "size": [
+      166,
+      207
+    ],
+    "alpha_bbox": [
+      12,
+      12,
+      154,
+      195
+    ]
+  },
+  {
+    "file": "blue-left.png",
+    "size": [
+      375,
+      200
+    ],
+    "alpha_bbox": [
+      12,
+      12,
+      363,
+      188
+    ]
+  },
+  {
+    "file": "blue-down.png",
+    "size": [
+      169,
+      215
+    ],
+    "alpha_bbox": [
+      12,
+      12,
+      157,
+      203
+    ]
+  },
+  {
+    "file": "blue-right.png",
+    "size": [
+      360,
+      200
+    ],
+    "alpha_bbox": [
+      12,
+      12,
+      348,
+      188
+    ]
+  },
+  {
+    "file": "blue-up.png",
+    "size": [
+      166,
+      205
+    ],
+    "alpha_bbox": [
+      12,
+      12,
+      154,
+      193
+    ]
+  },
+  {
+    "file": "yellow-left.png",
+    "size": [
+      374,
+      224
+    ],
+    "alpha_bbox": [
+      12,
+      12,
+      362,
+      212
+    ]
+  },
+  {
+    "file": "yellow-down.png",
+    "size": [
+      169,
+      212
+    ],
+    "alpha_bbox": [
+      12,
+      12,
+      157,
+      200
+    ]
+  },
+  {
+    "file": "yellow-right.png",
+    "size": [
+      362,
+      224
+    ],
+    "alpha_bbox": [
+      12,
+      12,
+      350,
+      212
+    ]
+  },
+  {
+    "file": "yellow-up.png",
+    "size": [
+      164,
+      207
+    ],
+    "alpha_bbox": [
+      12,
+      12,
+      152,
+      195
+    ]
+  },
+  {
+    "file": "green-left.png",
+    "size": [
+      374,
+      224
+    ],
+    "alpha_bbox": [
+      12,
+      12,
+      362,
+      212
+    ]
+  },
+  {
+    "file": "green-down.png",
+    "size": [
+      169,
+      224
+    ],
+    "alpha_bbox": [
+      12,
+      12,
+      157,
+      212
+    ]
+  },
+  {
+    "file": "green-right.png",
+    "size": [
+      363,
+      224
+    ],
+    "alpha_bbox": [
+      12,
+      12,
+      351,
+      212
+    ]
+  },
+  {
+    "file": "green-up.png",
+    "size": [
+      166,
+      205
+    ],
+    "alpha_bbox": [
+      12,
+      12,
+      154,
+      193
+    ]
+  },
+  {
+    "file": "purple-left.png",
+    "size": [
+      375,
+      225
+    ],
+    "alpha_bbox": [
+      12,
+      12,
+      363,
+      213
+    ]
+  },
+  {
+    "file": "purple-down.png",
+    "size": [
+      169,
+      225
+    ],
+    "alpha_bbox": [
+      12,
+      12,
+      157,
+      213
+    ]
+  },
+  {
+    "file": "purple-right.png",
+    "size": [
+      362,
+      225
+    ],
+    "alpha_bbox": [
+      12,
+      12,
+      350,
+      213
+    ]
+  },
+  {
+    "file": "purple-up.png",
+    "size": [
+      166,
+      225
+    ],
+    "alpha_bbox": [
+      12,
+      12,
+      154,
+      213
+    ]
+  },
+  {
+    "file": "orange-left.png",
+    "size": [
+      374,
+      240
+    ],
+    "alpha_bbox": [
+      12,
+      12,
+      362,
+      228
+    ]
+  },
+  {
+    "file": "orange-down.png",
+    "size": [
+      169,
+      236
+    ],
+    "alpha_bbox": [
+      12,
+      12,
+      157,
+      224
+    ]
+  },
+  {
+    "file": "orange-right.png",
+    "size": [
+      363,
+      240
+    ],
+    "alpha_bbox": [
+      12,
+      12,
+      351,
+      228
+    ]
+  },
+  {
+    "file": "orange-up.png",
+    "size": [
+      165,
+      233
+    ],
+    "alpha_bbox": [
+      12,
+      12,
+      153,
+      221
+    ]
+  }
+]

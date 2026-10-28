@@ -1,0 +1,128 @@
+{
+  "cap": 5,
+  "sixthBlocked": true,
+  "maxActive": 5,
+  "won": false,
+  "paused": true,
+  "frames": 7571,
+  "remaining": 21442,
+  "delivered": 7200,
+  "states": [
+    {
+      "state": "loop",
+      "load": 1137,
+      "reserve": 7136
+    },
+    {
+      "state": "return",
+      "load": 28,
+      "reserve": 0
+    },
+    {
+      "state": "loop",
+      "load": 1193,
+      "reserve": 2710
+    },
+    {
+      "state": "loop",
+      "load": 48,
+      "reserve": 6527
+    },
+    {
+      "state": "loop",
+      "load": 56,
+      "reserve": 912
+    },
+    {
+      "state": "park",
+      "load": 0,
+      "reserve": 406
+    }
+  ],
+  "errors": [],
+  "allLevelCapacityAccounting": [
+    {
+      "level": 1,
+      "valid": true
+    },
+    {
+      "level": 2,
+      "valid": true
+    },
+    {
+      "level": 3,
+      "valid": true
+    },
+    {
+      "level": 4,
+      "valid": true
+    },
+    {
+      "level": 5,
+      "valid": true
+    },
+    {
+      "level": 6,
+      "valid": true
+    },
+    {
+      "level": 7,
+      "valid": true
+    },
+    {
+      "level": 8,
+      "valid": true
+    },
+    {
+      "level": 9,
+      "valid": true
+    },
+    {
+      "level": 10,
+      "valid": true
+    },
+    {
+      "level": 11,
+      "valid": true
+    },
+    {
+      "level": 12,
+      "valid": true
+    },
+    {
+      "level": 13,
+      "valid": true
+    },
+    {
+      "level": 14,
+      "valid": true
+    },
+    {
+      "level": 15,
+      "valid": true
+    },
+    {
+      "level": 16,
+      "valid": true
+    },
+    {
+      "level": 17,
+      "valid": true
+    },
+    {
+      "level": 18,
+      "valid": true
+    }
+  ],
+  "undo": true,
+  "responsive": {
+    "320": true,
+    "390": true,
+    "768": true,
+    "1440": true
+  },
+  "limitations": [
+    "Automated greedy dispatch reached the intended blocked-order prompt; no complete five-slot playthrough verified.",
+    "Not all levels or physical mobile browsers tested."
+  ]
+}
