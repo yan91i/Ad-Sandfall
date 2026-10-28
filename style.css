@@ -1,1 +1,160 @@
-*{box-sizing:border-box}body{margin:0;min-height:100svh;background:linear-gradient(135deg,#c7efff,#f3d2ff,#ffe4bc);font-family:system-ui,sans-serif;color:#8058a8;display:flex;justify-content:center}main{width:min(100%,460px);padding:0 10px 16px}header{height:62px;display:flex;justify-content:space-between;align-items:center;padding:0 10px}strong{letter-spacing:3px;font-size:22px}small{display:block;font-size:9px;letter-spacing:3px;color:#a881be}button{font:inherit;cursor:pointer;touch-action:manipulation;border:1px solid #fff8e9;border-radius:12px;background:#fff4df;color:#9462b2}button:focus-visible{outline:3px solid #ff9c5d;outline-offset:2px}header button{width:40px;height:40px}section{position:relative;border:2px solid #fff5df;border-radius:22px;overflow:hidden;box-shadow:0 16px 50px #ad7bc844}canvas{display:block;width:100%;aspect-ratio:480/900;touch-action:none}nav{display:flex;gap:7px;margin-top:12px}nav button{flex:1;min-width:0;font-size:25px;padding:6px 0;box-shadow:0 3px #cda5e3}nav span{display:block;font-size:11px}footer{text-align:center;font-size:10px;margin-top:13px}#toast{position:absolute;left:6%;right:6%;bottom:12%;padding:12px;background:#a477d8ed;color:white;text-align:center;border-radius:13px;font-size:12px;opacity:0;pointer-events:none}#toast.show{opacity:1}#modal{position:absolute;inset:0;display:grid;place-items:center;padding:18px;background:#b98edcaa;backdrop-filter:blur(6px)}#modal[hidden]{display:none}article{width:100%;max-height:90%;overflow:auto;padding:18px;background:#fff5e5;border:3px solid white;border-radius:22px;text-align:center}article h1{font-size:24px}#body{font-size:13px;line-height:1.7;white-space:pre-line}#resume{width:100%;padding:12px;margin-top:15px;background:#ffc681}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.grid button{padding:5px;font-size:10px}.grid img{display:block;width:100%;border-radius:8px}.grid span{display:block;padding:4px}@media(min-width:800px){main{width:410px}}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  min-height: 100svh;
+  background: linear-gradient(135deg, #c7efff, #f3d2ff, #ffe4bc);
+  font-family: system-ui, sans-serif;
+  color: #8058a8;
+  display: flex;
+  justify-content: center;
+}
+main {
+  width: min(100%, 460px);
+  padding: 0 10px 16px;
+}
+header {
+  height: 62px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 10px;
+}
+strong {
+  letter-spacing: 3px;
+  font-size: 22px;
+}
+small {
+  display: block;
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: #a881be;
+}
+button {
+  font: inherit;
+  cursor: pointer;
+  touch-action: manipulation;
+  border: 1px solid #fff8e9;
+  border-radius: 12px;
+  background: #fff4df;
+  color: #9462b2;
+}
+button:focus-visible {
+  outline: 3px solid #ff9c5d;
+  outline-offset: 2px;
+}
+header button {
+  width: 40px;
+  height: 40px;
+}
+section {
+  position: relative;
+  border: 2px solid #fff5df;
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow: 0 16px 50px #ad7bc844;
+}
+canvas {
+  display: block;
+  width: 100%;
+  aspect-ratio: 480/900;
+  touch-action: none;
+}
+nav {
+  display: flex;
+  gap: 7px;
+  margin-top: 12px;
+}
+nav button {
+  flex: 1;
+  min-width: 0;
+  font-size: 25px;
+  padding: 6px 0;
+  box-shadow: 0 3px #cda5e3;
+}
+nav span {
+  display: block;
+  font-size: 11px;
+}
+footer {
+  text-align: center;
+  font-size: 10px;
+  margin-top: 13px;
+}
+#toast {
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  bottom: 12%;
+  padding: 12px;
+  background: #a477d8ed;
+  color: white;
+  text-align: center;
+  border-radius: 13px;
+  font-size: 12px;
+  opacity: 0;
+  pointer-events: none;
+}
+#toast.show {
+  opacity: 1;
+}
+#modal {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: #b98edcaa;
+  backdrop-filter: blur(6px);
+}
+#modal[hidden] {
+  display: none;
+}
+article {
+  width: 100%;
+  max-height: 90%;
+  overflow: auto;
+  padding: 18px;
+  background: #fff5e5;
+  border: 3px solid white;
+  border-radius: 22px;
+  text-align: center;
+}
+article h1 {
+  font-size: 24px;
+}
+#body {
+  font-size: 13px;
+  line-height: 1.7;
+  white-space: pre-line;
+}
+#resume {
+  width: 100%;
+  padding: 12px;
+  margin-top: 15px;
+  background: #ffc681;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+.grid button {
+  padding: 5px;
+  font-size: 10px;
+}
+.grid img {
+  display: block;
+  width: 100%;
+  border-radius: 8px;
+}
+.grid span {
+  display: block;
+  padding: 4px;
+}
+@media (min-width: 800px) {
+  main {
+    width: 410px;
+  }
+}

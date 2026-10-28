@@ -1,23 +1,648 @@
-(()=>{'use strict';const $=s=>document.querySelector(s),cv=$('#game'),g=cv.getContext('2d'),names=['red','blue','yellow','green','purple','orange'],dirs=[[-1,0],[0,-1],[1,0],[0,1]],images=names.map(n=>['left','up','right','down'].map(d=>{let i=new Image();i.src='assets/vehicles/'+n+'-'+d+'.png';return i}));let S,H=[],last=0,acc=0,timer,action,ac,sound=true;
-function tone(f=200){if(!sound)return;try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();ac.resume();let o=ac.createOscillator(),v=ac.createGain();o.frequency.value=f;v.gain.setValueAtTime(.025,ac.currentTime);v.gain.exponentialRampToValueAtTime(.001,ac.currentTime+.13);o.connect(v);v.connect(ac.destination);o.start();o.stop(ac.currentTime+.14)}catch(e){}}
-function box(x,y,w,h,r,c){g.beginPath();g.roundRect(x,y,Math.max(.01,w),Math.max(.01,h),r);g.fillStyle=c;g.fill()}function text(s,x,y,size=14,c='#8058a8'){g.font=`bold ${size}px system-ui`;g.textAlign='center';g.textBaseline='middle';g.fillStyle=c;g.fillText(s,x,y)}function toast(s){$('#toast').textContent=s;$('#toast').classList.add('show');clearTimeout(timer);timer=setTimeout(()=>$('#toast').classList.remove('show'),2400)}function close(){S.paused=false;$('#modal').hidden=true}function modal(title,body,fn=close,label='Continue'){S.paused=true;$('#title').textContent=title;$('#body').textContent=body;$('#resume').textContent=label;action=fn;$('#modal').hidden=false}
-function load(n){n=Math.max(0,Math.min(17,Number(n)||0));let grid=Uint8Array.from(ART[n].grid,c=>c+1),counts=Array(6).fill(0);grid.forEach(c=>counts[c-1]++);let trucks=[];counts.forEach((amount,c)=>{let count=Math.ceil(amount/900);for(let i=0;i<count;i++)trucks.push({id:trucks.length,c,capacity:Math.floor(amount/count)+(i<amount%count?1:0),load:0,fill:0,state:'park',time:0,shake:0})});
-// Deterministic mixed-orientation parking; retain a geometric removal sequence.
-let seed=(n+1)*731;function random(){seed=(seed*1664525+1013904223)>>>0;return seed/4294967296}
-trucks.sort((a,b)=>(a.id*37%101)-(b.id*37%101));
-let cols=6,rows=Math.ceil(trucks.length/cols),cw=424/cols,ch=260/rows;
-trucks.forEach((t,i)=>{let row=Math.floor(i/cols),col=i%cols;t.id=i;t.x=28+(col+.5)*cw+(row%2?4:-4);t.y=585+(row+.5)*ch;t.dir=Math.floor(random()*4);t.length=49;t.width=t.length*308/568});
-function rect(t,d=t.dir){return{x:t.x-(d%2?t.width:t.length)/2,y:t.y-(d%2?t.length:t.width)/2,w:d%2?t.width:t.length,h:d%2?t.length:t.width}}
-function obstructed(t,d,remaining){let a=rect(t,d),v=dirs[d];return remaining.some(o=>{if(o===t)return false;let b=rect(o);return v[0]?a.y<b.y+b.h-1&&a.y+a.h>b.y+1&&(v[0]<0?b.x+b.w<=a.x+2:b.x>=a.x+a.w-2):a.x<b.x+b.w-1&&a.x+a.w>b.x+1&&(v[1]<0?b.y+b.h<=a.y+2:b.y>=a.y+a.h-2)})}
-let remaining=[...trucks],removal=[];
-while(remaining.length){let t=remaining.find(t=>!obstructed(t,t.dir,remaining));if(!t){outer:for(let candidate of remaining)for(let d=0;d<4;d++)if(!obstructed(candidate,d,remaining)){candidate.dir=d;t=candidate;break outer}}if(!t)break;removal.push(t.id);remaining=remaining.filter(o=>o!==t)}
-S={level:n,grid,counts,total:grid.length,initial:grid.length,trucks,particles:[],time:0,tick:0,paused:false,won:false,serial:0,entry:0,removalOrder:removal,hint:-1,hintTime:0};H=[];close();try{localStorage.setItem('sandfall-refined-level',n)}catch(e){}}
-function bounds(t){return{x:t.x-(t.dir%2?t.width:t.length)/2,y:t.y-(t.dir%2?t.length:t.width)/2,w:t.dir%2?t.width:t.length,h:t.dir%2?t.length:t.width}}function blockers(t){let a=bounds(t),d=dirs[t.dir];return S.trucks.filter(o=>{if(o===t||!['park','start','depart'].includes(o.state))return false;let b=bounds(o);return d[0]?a.y<b.y+b.h-1&&a.y+a.h>b.y+1&&(d[0]<0?b.x+b.w<=a.x+2:b.x>=a.x+a.w-2):a.x<b.x+b.w-1&&a.x+a.w>b.x+1&&(d[1]<0?b.y+b.h<=a.y+2:b.y>=a.y+a.h-2)})}function active(){return S.trucks.filter(t=>!['park','done'].includes(t.state))}function snapshot(){H.push({grid:Array.from(S.grid),counts:[...S.counts],total:S.total,trucks:JSON.parse(JSON.stringify(S.trucks)),serial:S.serial,entry:S.entry});if(H.length>40)H.shift()}function undo(){let h=H.pop();if(!h)return toast('Nothing to undo yet.');S.grid.set(h.grid);S.counts=h.counts;S.total=h.total;S.trucks=h.trucks;S.serial=h.serial;S.entry=h.entry;S.particles=[];S.won=false;close();toast('Dispatch undone.')}function dispatch(t){if(S.paused||S.won||t.state!=='park')return false;let b=blockers(t);if(b.length){t.shake=.35;b.forEach(t=>t.shake=.35);tone(110);toast('Path blocked. Move the truck ahead first.');return false}if(active().length>=5){toast('All five slots are occupied.');return false}snapshot();t.state='start';t.time=0;t.ticket=++S.serial;tone(160);return true}
-function gravity(){let w=144,a=S.grid;S.tick++;for(let y=94;y>=0;y--)for(let i=0;i<w;i++){let x=S.tick%2?143-i:i,p=y*w+x;if(!a[p])continue;let q=p+w,d=(x+y+S.tick)%2?1:-1;if(!a[q]){a[q]=a[p];a[p]=0}else if(x+d>=0&&x+d<w&&!a[q+d]){a[q+d]=a[p];a[p]=0}else if(x-d>=0&&x-d<w&&!a[q-d]){a[q-d]=a[p];a[p]=0}}}
-function drain(t){let center=Math.floor((t.x+12-72)/336*144),got=0;for(let d=0;d<48&&t.load<t.capacity;d++){let x=center+(d%2?1:-1)*Math.floor(d/2);if(x<0||x>=144)continue;for(let y=95;y>87&&t.load<t.capacity;y--){let p=y*144+x,c=S.grid[p];if(c===t.c+1){S.grid[p]=0;S.total--;S.counts[t.c]--;t.load++;got++;if(S.particles.length<2500)for(let k=0;k<2;k++)S.particles.push({sx:72+(x+.5)*336/144,sy:180+(y+.5)*220/96,x:0,y:0,age:0,duration:.23+Math.random()*.1,target:t,dx:-6+Math.random()*27,dy:-8+Math.random()*12,c:t.c,size:1.6+Math.random()*2.2})}else if(c)break}}if(got&&S.tick%8===0)tone(1600);return got}
-function step(dt){if(S.paused)return;S.time+=dt;S.entry=Math.max(0,S.entry-dt);S.hintTime-=dt;for(let k=0;k<4;k++)gravity();for(let t of S.trucks){t.time+=dt;t.shake=Math.max(0,t.shake-dt);t.fill+=(t.load-t.fill)*Math.min(1,dt*12);if(t.state==='start'&&t.time>=.12){t.state='depart';t.time=0}else if(t.state==='depart'){let d=dirs[t.dir];t.x+=d[0]*650*dt;t.y+=d[1]*650*dt;if(t.x<-60||t.x>540||t.y<550||t.y>940){t.state='queue';t.x=540;t.y=444;t.time=0}}else if(t.state==='queue'){let earlier=S.trucks.some(o=>o!==t&&['start','depart','queue'].includes(o.state)&&o.ticket<t.ticket),near=S.trucks.some(o=>o!==t&&o.state==='road'&&o.x>430);if(!earlier&&!near&&S.entry<=0){t.state='road';t.x=540;t.y=444;t.time=0;S.entry=.2}}else if(t.state==='road'){if(t.x>52&&t.x<420&&t.load<t.capacity)drain(t);let gap=S.trucks.filter(o=>o!==t&&o.state==='road'&&o.x<t.x).reduce((m,o)=>Math.min(m,t.x-o.x),Infinity);t.x-=(gap<76?0:155)*dt;if(t.x<=-60){t.time=0;if(t.load>=t.capacity){t.state='done';t.fill=t.capacity;tone(750)}else t.state='return'}}else if(t.state==='return'&&t.time+1e-9>=1){t.state='queue';t.ticket=++S.serial;t.time=0}}
-for(let i=S.particles.length-1;i>=0;i--){let p=S.particles[i];p.age+=dt;let u=Math.min(1,p.age/p.duration);p.x=p.sx+(p.target.x+p.dx-p.sx)*u;p.y=p.sy+(444+p.dy-p.sy)*u*u;if(u>=1)S.particles.splice(i,1)}if(!S.won&&S.total===0&&S.trucks.every(t=>t.state==='done')){S.won=true;let state=S;setTimeout(()=>{if(S===state&&S.won)modal('Loading Complete!','All sand collected. Ready for the next picture?',()=>load((S.level+1)%18),'Next Level')},300)}}
-let sandCanvas=document.createElement('canvas');sandCanvas.width=144;sandCanvas.height=96;let sc=sandCanvas.getContext('2d'),pixels=sc.createImageData(144,96),rgb=COLORS.map(c=>[parseInt(c.slice(1,3),16),parseInt(c.slice(3,5),16),parseInt(c.slice(5,7),16)]);
-function truck(t){if(['done','queue','return'].includes(t.state))return;let parked=['park','start','depart'].includes(t.state),d=parked?t.dir:0,L=parked?t.length*1.10:64,W=L*308/568,w=d%2?W:L,h=d%2?L:W;g.save();g.translate(t.x,t.y);if(t.shake>0)g.translate(Math.sin(S.time*90)*2,0);let img=images[t.c][d];if(img.complete&&img.naturalWidth)g.drawImage(img,-w/2,-h/2,w,h);else box(-w/2,-h/2,w,h,4,COLORS[t.c]);if(parked){let v=dirs[d];g.strokeStyle='white';g.lineWidth=2.4;g.lineCap='round';g.lineJoin='round';g.shadowColor='#9856b7';g.shadowBlur=2;g.beginPath();g.moveTo(-v[0]*8,-v[1]*8);g.lineTo(v[0]*6,v[1]*6);g.moveTo(v[0]*1-v[1]*5,v[1]*1+v[0]*5);g.lineTo(v[0]*7,v[1]*7);g.lineTo(v[0]*1+v[1]*5,v[1]*1-v[0]*5);g.stroke()}else{let f=t.fill/Math.max(1,t.capacity);g.save();g.beginPath();g.roundRect(-5,-11,31,21,2);g.clip();g.fillStyle=COLORS[t.c];g.fillRect(-5,10-f*21,31,f*21);for(let i=0;i<25;i++){g.fillStyle='#fff8';g.fillRect(-4+i*7%29,11-f*21+i*3%Math.max(1,f*20),1,1)}g.restore();box(-18,-7,36,16,5,'#a26bc9ee');text(Math.floor(t.load/t.capacity*100)+'%',0,1,10,'white')}g.restore();if(S.hint===t.id&&S.hintTime>0){let b=bounds(t);g.strokeStyle='#fff4a0';g.lineWidth=3;g.strokeRect(b.x-3,b.y-3,b.w+6,b.h+6)}}
-function draw(){g.setTransform(2,0,0,2,0,0);let bg=g.createLinearGradient(0,0,0,900);bg.addColorStop(0,'#bfefff');bg.addColorStop(1,'#ffe2bb');g.fillStyle=bg;g.fillRect(0,0,480,900);box(16,16,448,90,18,'#fff7e5');text('LEVEL '+(S.level+1),240,40,23);text(ART[S.level].title,240,67,13,'#ab80bd');text('BALANCED LOADS',81,43,9);text('5 SLOTS',408,43,10);box(82,88,316,6,3,'#e9d2ff');box(82,88,316*(1-S.total/S.initial),6,3,'#ffb758');box(62,169,356,240,12,'#c9a9ec');box(68,175,344,230,6,'#fff2cd');box(72,180,336,220,2,'#fff5df');let a=pixels.data;for(let i=0;i<S.grid.length;i++){let c=S.grid[i],p=i*4;if(c){let noise=((i*13+i%17*7)%13)-6;for(let j=0;j<3;j++)a[p+j]=rgb[c-1][j]+noise;a[p+3]=255}else a[p+3]=0}sc.putImageData(pixels,0,0);g.imageSmoothingEnabled=false;g.drawImage(sandCanvas,72,180,336,220);g.imageSmoothingEnabled=true;box(-5,414,490,60,0,'#fff4de');box(-5,420,490,48,0,'#c4b2f3');g.save();g.strokeStyle='#fff8e6';g.setLineDash([13,15]);g.lineWidth=2;g.beginPath();g.moveTo(0,444);g.lineTo(480,444);g.stroke();g.restore();text('← Load while moving · Exit left, return after 1s',240,490,10);box(64,511,352,50,12,'#bda0e4');for(let i=0;i<5;i++){let x=76+i*67;box(x,520,60,32,7,'#edd5ff');let t=active()[i];if(t){box(x+7,527,46,18,4,COLORS[t.c]);text(t.state==='return'?Math.max(0,1-t.time).toFixed(1)+'s':t.state==='queue'?'…':'←',x+30,536,12,'white')}else text('+',x+30,536,22,'white')}text('Active '+active().length+'/5 · Trucks '+S.trucks.filter(t=>t.state!=='done').length,240,574,11);box(16,590,448,268,15,'#f8d4e7');text('Tap a truck with a clear path ahead',240,879,12);S.trucks.forEach(truck);for(let p of S.particles){g.fillStyle=COLORS[p.c];g.fillRect(p.x,p.y,p.size,p.size)}}
-function frame(ts){let dt=Math.min(.05,(ts-last)/1000||.016);last=ts;if(!S.paused){acc+=dt;let n=0;while(acc>=1/60&&n++<4){step(1/60);acc-=1/60}}else acc=0;draw();requestAnimationFrame(frame)}cv.addEventListener('pointerdown',e=>{let r=cv.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*480,y=(e.clientY-r.top)/r.height*900,candidates=S.trucks.filter(t=>{let b=bounds(t);return t.state==='park'&&x>b.x-4&&x<b.x+b.w+4&&y>b.y-4&&y<b.y+b.h+4}).sort((a,b)=>Math.hypot(x-a.x,y-a.y)-Math.hypot(x-b.x,y-b.y));if(candidates[0])dispatch(candidates[0])});$('#undo').onclick=undo;$('#restart').onclick=()=>load(S.level);$('#pause').onclick=()=>S.paused?close():modal('Game Paused','Trucks, sand and return timers are paused.');$('#resume').onclick=()=>action();$('#sound').onclick=()=>{sound=!sound;toast(sound?'Sound on':'Sound off')};$('#hint').onclick=()=>{let bottom=new Set(Array.from(S.grid.slice(95*144)).filter(Boolean).map(c=>c-1)),legal=S.trucks.filter(t=>t.state==='park'&&!blockers(t).length),t=legal.find(t=>bottom.has(t.c))||legal[0];if(!t)return toast('No clear truck. Wait, undo or restart.');S.hint=t.id;S.hintTime=4;toast(bottom.has(t.c)?'Highlighted truck matches exposed sand.':'Move the highlighted truck to clear a path.')};$('#levels').onclick=()=>{modal('Choose a Picture','');let grid=document.createElement('div');grid.className='grid';ART.forEach((a,i)=>{let b=document.createElement('button'),img=document.createElement('img'),label=document.createElement('span');b.type='button';img.src='assets/art/'+(i+1)+'.png';img.alt=a.title;label.textContent=(i+1)+'. '+a.title;b.append(img,label);b.onclick=()=>load(i);grid.append(b)});$('#body').append(grid)};document.addEventListener('visibilitychange',()=>{if(document.hidden&&!S.paused)modal('Paused','Automatically paused when switching windows.')});window.Sandfall={get state(){return S},load,step,draw,dispatch,blockers,undo,setSound(v){sound=v}};let saved=0;try{saved=Number(localStorage.getItem('sandfall-refined-level'))||0}catch(e){}load(saved);requestAnimationFrame(frame);toast('All trucks are visible. Each carries at most 900 grains.');})();
+(() => {
+  "use strict";
+  const $ = (s) => document.querySelector(s),
+    cv = $("#game"),
+    g = cv.getContext("2d"),
+    names = ["red", "blue", "yellow", "green", "purple", "orange"],
+    dirs = [
+      [-1, 0],
+      [0, -1],
+      [1, 0],
+      [0, 1],
+    ],
+    images = names.map((n) =>
+      ["left", "up", "right", "down"].map((d) => {
+        let i = new Image();
+        i.src = "assets/vehicles/" + n + "-" + d + ".png";
+        return i;
+      }),
+    );
+  let S,
+    H = [],
+    last = 0,
+    acc = 0,
+    timer,
+    action,
+    ac,
+    sound = true;
+  function tone(f = 200) {
+    if (!sound) return;
+    try {
+      ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+      ac.resume();
+      let o = ac.createOscillator(),
+        v = ac.createGain();
+      o.frequency.value = f;
+      v.gain.setValueAtTime(0.025, ac.currentTime);
+      v.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.13);
+      o.connect(v);
+      v.connect(ac.destination);
+      o.start();
+      o.stop(ac.currentTime + 0.14);
+    } catch (e) {}
+  }
+  function box(x, y, w, h, r, c) {
+    g.beginPath();
+    g.roundRect(x, y, Math.max(0.01, w), Math.max(0.01, h), r);
+    g.fillStyle = c;
+    g.fill();
+  }
+  function text(s, x, y, size = 14, c = "#8058a8") {
+    g.font = `bold ${size}px system-ui`;
+    g.textAlign = "center";
+    g.textBaseline = "middle";
+    g.fillStyle = c;
+    g.fillText(s, x, y);
+  }
+  function toast(s) {
+    $("#toast").textContent = s;
+    $("#toast").classList.add("show");
+    clearTimeout(timer);
+    timer = setTimeout(() => $("#toast").classList.remove("show"), 2400);
+  }
+  function close() {
+    S.paused = false;
+    $("#modal").hidden = true;
+  }
+  function modal(title, body, fn = close, label = "Continue") {
+    S.paused = true;
+    $("#title").textContent = title;
+    $("#body").textContent = body;
+    $("#resume").textContent = label;
+    action = fn;
+    $("#modal").hidden = false;
+  }
+  function load(n) {
+    n = Math.max(0, Math.min(17, Number(n) || 0));
+    let grid = Uint8Array.from(ART[n].grid, (c) => c + 1),
+      counts = Array(6).fill(0);
+    grid.forEach((c) => counts[c - 1]++);
+    let trucks = [];
+    counts.forEach((amount, c) => {
+      let count = Math.ceil(amount / 900);
+      for (let i = 0; i < count; i++)
+        trucks.push({
+          id: trucks.length,
+          c,
+          capacity: Math.floor(amount / count) + (i < amount % count ? 1 : 0),
+          load: 0,
+          fill: 0,
+          state: "park",
+          time: 0,
+          shake: 0,
+        });
+    });
+    // Deterministic mixed-orientation parking; retain a geometric removal sequence.
+    let seed = (n + 1) * 731;
+    function random() {
+      seed = (seed * 1664525 + 1013904223) >>> 0;
+      return seed / 4294967296;
+    }
+    trucks.sort((a, b) => ((a.id * 37) % 101) - ((b.id * 37) % 101));
+    let cols = 6,
+      rows = Math.ceil(trucks.length / cols),
+      cw = 424 / cols,
+      ch = 260 / rows;
+    trucks.forEach((t, i) => {
+      let row = Math.floor(i / cols),
+        col = i % cols;
+      t.id = i;
+      t.x = 28 + (col + 0.5) * cw + (row % 2 ? 4 : -4);
+      t.y = 585 + (row + 0.5) * ch;
+      t.dir = Math.floor(random() * 4);
+      t.length = 49;
+      t.width = (t.length * 308) / 568;
+    });
+    function rect(t, d = t.dir) {
+      return {
+        x: t.x - (d % 2 ? t.width : t.length) / 2,
+        y: t.y - (d % 2 ? t.length : t.width) / 2,
+        w: d % 2 ? t.width : t.length,
+        h: d % 2 ? t.length : t.width,
+      };
+    }
+    function obstructed(t, d, remaining) {
+      let a = rect(t, d),
+        v = dirs[d];
+      return remaining.some((o) => {
+        if (o === t) return false;
+        let b = rect(o);
+        return v[0]
+          ? a.y < b.y + b.h - 1 &&
+              a.y + a.h > b.y + 1 &&
+              (v[0] < 0 ? b.x + b.w <= a.x + 2 : b.x >= a.x + a.w - 2)
+          : a.x < b.x + b.w - 1 &&
+              a.x + a.w > b.x + 1 &&
+              (v[1] < 0 ? b.y + b.h <= a.y + 2 : b.y >= a.y + a.h - 2);
+      });
+    }
+    let remaining = [...trucks],
+      removal = [];
+    while (remaining.length) {
+      let t = remaining.find((t) => !obstructed(t, t.dir, remaining));
+      if (!t) {
+        outer: for (let candidate of remaining)
+          for (let d = 0; d < 4; d++)
+            if (!obstructed(candidate, d, remaining)) {
+              candidate.dir = d;
+              t = candidate;
+              break outer;
+            }
+      }
+      if (!t) break;
+      removal.push(t.id);
+      remaining = remaining.filter((o) => o !== t);
+    }
+    S = {
+      level: n,
+      grid,
+      counts,
+      total: grid.length,
+      initial: grid.length,
+      trucks,
+      particles: [],
+      time: 0,
+      tick: 0,
+      paused: false,
+      won: false,
+      serial: 0,
+      entry: 0,
+      removalOrder: removal,
+      hint: -1,
+      hintTime: 0,
+    };
+    H = [];
+    close();
+    try {
+      localStorage.setItem("sandfall-refined-level", n);
+    } catch (e) {}
+  }
+  function bounds(t) {
+    return {
+      x: t.x - (t.dir % 2 ? t.width : t.length) / 2,
+      y: t.y - (t.dir % 2 ? t.length : t.width) / 2,
+      w: t.dir % 2 ? t.width : t.length,
+      h: t.dir % 2 ? t.length : t.width,
+    };
+  }
+  function blockers(t) {
+    let a = bounds(t),
+      d = dirs[t.dir];
+    return S.trucks.filter((o) => {
+      if (o === t || !["park", "start", "depart"].includes(o.state))
+        return false;
+      let b = bounds(o);
+      return d[0]
+        ? a.y < b.y + b.h - 1 &&
+            a.y + a.h > b.y + 1 &&
+            (d[0] < 0 ? b.x + b.w <= a.x + 2 : b.x >= a.x + a.w - 2)
+        : a.x < b.x + b.w - 1 &&
+            a.x + a.w > b.x + 1 &&
+            (d[1] < 0 ? b.y + b.h <= a.y + 2 : b.y >= a.y + a.h - 2);
+    });
+  }
+  function active() {
+    return S.trucks.filter((t) => !["park", "done"].includes(t.state));
+  }
+  function snapshot() {
+    H.push({
+      grid: Array.from(S.grid),
+      counts: [...S.counts],
+      total: S.total,
+      trucks: JSON.parse(JSON.stringify(S.trucks)),
+      serial: S.serial,
+      entry: S.entry,
+    });
+    if (H.length > 40) H.shift();
+  }
+  function undo() {
+    let h = H.pop();
+    if (!h) return toast("Nothing to undo yet.");
+    S.grid.set(h.grid);
+    S.counts = h.counts;
+    S.total = h.total;
+    S.trucks = h.trucks;
+    S.serial = h.serial;
+    S.entry = h.entry;
+    S.particles = [];
+    S.won = false;
+    close();
+    toast("Dispatch undone.");
+  }
+  function dispatch(t) {
+    if (S.paused || S.won || t.state !== "park") return false;
+    let b = blockers(t);
+    if (b.length) {
+      t.shake = 0.35;
+      b.forEach((t) => (t.shake = 0.35));
+      tone(110);
+      toast("Path blocked. Move the truck ahead first.");
+      return false;
+    }
+    if (active().length >= 5) {
+      toast("All five slots are occupied.");
+      return false;
+    }
+    snapshot();
+    t.state = "start";
+    t.time = 0;
+    t.ticket = ++S.serial;
+    tone(160);
+    return true;
+  }
+  function gravity() {
+    let w = 144,
+      a = S.grid;
+    S.tick++;
+    for (let y = 94; y >= 0; y--)
+      for (let i = 0; i < w; i++) {
+        let x = S.tick % 2 ? 143 - i : i,
+          p = y * w + x;
+        if (!a[p]) continue;
+        let q = p + w,
+          d = (x + y + S.tick) % 2 ? 1 : -1;
+        if (!a[q]) {
+          a[q] = a[p];
+          a[p] = 0;
+        } else if (x + d >= 0 && x + d < w && !a[q + d]) {
+          a[q + d] = a[p];
+          a[p] = 0;
+        } else if (x - d >= 0 && x - d < w && !a[q - d]) {
+          a[q - d] = a[p];
+          a[p] = 0;
+        }
+      }
+  }
+  function drain(t) {
+    let center = Math.floor(((t.x + 12 - 72) / 336) * 144),
+      got = 0;
+    for (let d = 0; d < 48 && t.load < t.capacity; d++) {
+      let x = center + (d % 2 ? 1 : -1) * Math.floor(d / 2);
+      if (x < 0 || x >= 144) continue;
+      for (let y = 95; y > 87 && t.load < t.capacity; y--) {
+        let p = y * 144 + x,
+          c = S.grid[p];
+        if (c === t.c + 1) {
+          S.grid[p] = 0;
+          S.total--;
+          S.counts[t.c]--;
+          t.load++;
+          got++;
+          if (S.particles.length < 2500)
+            for (let k = 0; k < 2; k++)
+              S.particles.push({
+                sx: 72 + ((x + 0.5) * 336) / 144,
+                sy: 180 + ((y + 0.5) * 220) / 96,
+                x: 0,
+                y: 0,
+                age: 0,
+                duration: 0.23 + Math.random() * 0.1,
+                target: t,
+                dx: -6 + Math.random() * 27,
+                dy: -8 + Math.random() * 12,
+                c: t.c,
+                size: 1.6 + Math.random() * 2.2,
+              });
+        } else if (c) break;
+      }
+    }
+    if (got && S.tick % 8 === 0) tone(1600);
+    return got;
+  }
+  function step(dt) {
+    if (S.paused) return;
+    S.time += dt;
+    S.entry = Math.max(0, S.entry - dt);
+    S.hintTime -= dt;
+    for (let k = 0; k < 4; k++) gravity();
+    for (let t of S.trucks) {
+      t.time += dt;
+      t.shake = Math.max(0, t.shake - dt);
+      t.fill += (t.load - t.fill) * Math.min(1, dt * 12);
+      if (t.state === "start" && t.time >= 0.12) {
+        t.state = "depart";
+        t.time = 0;
+      } else if (t.state === "depart") {
+        let d = dirs[t.dir];
+        t.x += d[0] * 650 * dt;
+        t.y += d[1] * 650 * dt;
+        if (t.x < -60 || t.x > 540 || t.y < 550 || t.y > 940) {
+          t.state = "queue";
+          t.x = 540;
+          t.y = 444;
+          t.time = 0;
+        }
+      } else if (t.state === "queue") {
+        let earlier = S.trucks.some(
+            (o) =>
+              o !== t &&
+              ["start", "depart", "queue"].includes(o.state) &&
+              o.ticket < t.ticket,
+          ),
+          near = S.trucks.some(
+            (o) => o !== t && o.state === "road" && o.x > 430,
+          );
+        if (!earlier && !near && S.entry <= 0) {
+          t.state = "road";
+          t.x = 540;
+          t.y = 444;
+          t.time = 0;
+          S.entry = 0.2;
+        }
+      } else if (t.state === "road") {
+        if (t.x > 52 && t.x < 420 && t.load < t.capacity) drain(t);
+        let gap = S.trucks
+          .filter((o) => o !== t && o.state === "road" && o.x < t.x)
+          .reduce((m, o) => Math.min(m, t.x - o.x), Infinity);
+        t.x -= (gap < 76 ? 0 : 155) * dt;
+        if (t.x <= -60) {
+          t.time = 0;
+          if (t.load >= t.capacity) {
+            t.state = "done";
+            t.fill = t.capacity;
+            tone(750);
+          } else t.state = "return";
+        }
+      } else if (t.state === "return" && t.time + 1e-9 >= 1) {
+        t.state = "queue";
+        t.ticket = ++S.serial;
+        t.time = 0;
+      }
+    }
+    for (let i = S.particles.length - 1; i >= 0; i--) {
+      let p = S.particles[i];
+      p.age += dt;
+      let u = Math.min(1, p.age / p.duration);
+      p.x = p.sx + (p.target.x + p.dx - p.sx) * u;
+      p.y = p.sy + (444 + p.dy - p.sy) * u * u;
+      if (u >= 1) S.particles.splice(i, 1);
+    }
+    if (!S.won && S.total === 0 && S.trucks.every((t) => t.state === "done")) {
+      S.won = true;
+      let state = S;
+      setTimeout(() => {
+        if (S === state && S.won)
+          modal(
+            "Loading Complete!",
+            "All sand collected. Ready for the next picture?",
+            () => load((S.level + 1) % 18),
+            "Next Level",
+          );
+      }, 300);
+    }
+  }
+  let sandCanvas = document.createElement("canvas");
+  sandCanvas.width = 144;
+  sandCanvas.height = 96;
+  let sc = sandCanvas.getContext("2d"),
+    pixels = sc.createImageData(144, 96),
+    rgb = COLORS.map((c) => [
+      parseInt(c.slice(1, 3), 16),
+      parseInt(c.slice(3, 5), 16),
+      parseInt(c.slice(5, 7), 16),
+    ]);
+  function truck(t) {
+    if (["done", "queue", "return"].includes(t.state)) return;
+    let parked = ["park", "start", "depart"].includes(t.state),
+      d = parked ? t.dir : 0,
+      L = parked ? t.length * 1.1 : 64,
+      W = (L * 308) / 568,
+      w = d % 2 ? W : L,
+      h = d % 2 ? L : W;
+    g.save();
+    g.translate(t.x, t.y);
+    if (t.shake > 0) g.translate(Math.sin(S.time * 90) * 2, 0);
+    let img = images[t.c][d];
+    if (img.complete && img.naturalWidth)
+      g.drawImage(img, -w / 2, -h / 2, w, h);
+    else box(-w / 2, -h / 2, w, h, 4, COLORS[t.c]);
+    if (parked) {
+      let v = dirs[d];
+      g.strokeStyle = "white";
+      g.lineWidth = 2.4;
+      g.lineCap = "round";
+      g.lineJoin = "round";
+      g.shadowColor = "#9856b7";
+      g.shadowBlur = 2;
+      g.beginPath();
+      g.moveTo(-v[0] * 8, -v[1] * 8);
+      g.lineTo(v[0] * 6, v[1] * 6);
+      g.moveTo(v[0] * 1 - v[1] * 5, v[1] * 1 + v[0] * 5);
+      g.lineTo(v[0] * 7, v[1] * 7);
+      g.lineTo(v[0] * 1 + v[1] * 5, v[1] * 1 - v[0] * 5);
+      g.stroke();
+    } else {
+      let f = t.fill / Math.max(1, t.capacity);
+      g.save();
+      g.beginPath();
+      g.roundRect(-5, -11, 31, 21, 2);
+      g.clip();
+      g.fillStyle = COLORS[t.c];
+      g.fillRect(-5, 10 - f * 21, 31, f * 21);
+      for (let i = 0; i < 25; i++) {
+        g.fillStyle = "#fff8";
+        g.fillRect(
+          -4 + ((i * 7) % 29),
+          11 - f * 21 + ((i * 3) % Math.max(1, f * 20)),
+          1,
+          1,
+        );
+      }
+      g.restore();
+      box(-18, -7, 36, 16, 5, "#a26bc9ee");
+      text(Math.floor((t.load / t.capacity) * 100) + "%", 0, 1, 10, "white");
+    }
+    g.restore();
+    if (S.hint === t.id && S.hintTime > 0) {
+      let b = bounds(t);
+      g.strokeStyle = "#fff4a0";
+      g.lineWidth = 3;
+      g.strokeRect(b.x - 3, b.y - 3, b.w + 6, b.h + 6);
+    }
+  }
+  function draw() {
+    g.setTransform(2, 0, 0, 2, 0, 0);
+    let bg = g.createLinearGradient(0, 0, 0, 900);
+    bg.addColorStop(0, "#bfefff");
+    bg.addColorStop(1, "#ffe2bb");
+    g.fillStyle = bg;
+    g.fillRect(0, 0, 480, 900);
+    box(16, 16, 448, 90, 18, "#fff7e5");
+    text("LEVEL " + (S.level + 1), 240, 40, 23);
+    text(ART[S.level].title, 240, 67, 13, "#ab80bd");
+    text("BALANCED LOADS", 81, 43, 9);
+    text("5 SLOTS", 408, 43, 10);
+    box(82, 88, 316, 6, 3, "#e9d2ff");
+    box(82, 88, 316 * (1 - S.total / S.initial), 6, 3, "#ffb758");
+    box(62, 169, 356, 240, 12, "#c9a9ec");
+    box(68, 175, 344, 230, 6, "#fff2cd");
+    box(72, 180, 336, 220, 2, "#fff5df");
+    let a = pixels.data;
+    for (let i = 0; i < S.grid.length; i++) {
+      let c = S.grid[i],
+        p = i * 4;
+      if (c) {
+        let noise = ((i * 13 + (i % 17) * 7) % 13) - 6;
+        for (let j = 0; j < 3; j++) a[p + j] = rgb[c - 1][j] + noise;
+        a[p + 3] = 255;
+      } else a[p + 3] = 0;
+    }
+    sc.putImageData(pixels, 0, 0);
+    g.imageSmoothingEnabled = false;
+    g.drawImage(sandCanvas, 72, 180, 336, 220);
+    g.imageSmoothingEnabled = true;
+    box(-5, 414, 490, 60, 0, "#fff4de");
+    box(-5, 420, 490, 48, 0, "#c4b2f3");
+    g.save();
+    g.strokeStyle = "#fff8e6";
+    g.setLineDash([13, 15]);
+    g.lineWidth = 2;
+    g.beginPath();
+    g.moveTo(0, 444);
+    g.lineTo(480, 444);
+    g.stroke();
+    g.restore();
+    text("← Load while moving · Exit left, return after 1s", 240, 490, 10);
+    box(64, 511, 352, 50, 12, "#bda0e4");
+    for (let i = 0; i < 5; i++) {
+      let x = 76 + i * 67;
+      box(x, 520, 60, 32, 7, "#edd5ff");
+      let t = active()[i];
+      if (t) {
+        box(x + 7, 527, 46, 18, 4, COLORS[t.c]);
+        text(
+          t.state === "return"
+            ? Math.max(0, 1 - t.time).toFixed(1) + "s"
+            : t.state === "queue"
+              ? "…"
+              : "←",
+          x + 30,
+          536,
+          12,
+          "white",
+        );
+      } else text("+", x + 30, 536, 22, "white");
+    }
+    text(
+      "Active " +
+        active().length +
+        "/5 · Trucks " +
+        S.trucks.filter((t) => t.state !== "done").length,
+      240,
+      574,
+      11,
+    );
+    box(16, 590, 448, 268, 15, "#f8d4e7");
+    text("Tap a truck with a clear path ahead", 240, 879, 12);
+    S.trucks.forEach(truck);
+    for (let p of S.particles) {
+      g.fillStyle = COLORS[p.c];
+      g.fillRect(p.x, p.y, p.size, p.size);
+    }
+  }
+  function frame(ts) {
+    let dt = Math.min(0.05, (ts - last) / 1000 || 0.016);
+    last = ts;
+    if (!S.paused) {
+      acc += dt;
+      let n = 0;
+      while (acc >= 1 / 60 && n++ < 4) {
+        step(1 / 60);
+        acc -= 1 / 60;
+      }
+    } else acc = 0;
+    draw();
+    requestAnimationFrame(frame);
+  }
+  cv.addEventListener("pointerdown", (e) => {
+    let r = cv.getBoundingClientRect(),
+      x = ((e.clientX - r.left) / r.width) * 480,
+      y = ((e.clientY - r.top) / r.height) * 900,
+      candidates = S.trucks
+        .filter((t) => {
+          let b = bounds(t);
+          return (
+            t.state === "park" &&
+            x > b.x - 4 &&
+            x < b.x + b.w + 4 &&
+            y > b.y - 4 &&
+            y < b.y + b.h + 4
+          );
+        })
+        .sort(
+          (a, b) => Math.hypot(x - a.x, y - a.y) - Math.hypot(x - b.x, y - b.y),
+        );
+    if (candidates[0]) dispatch(candidates[0]);
+  });
+  $("#undo").onclick = undo;
+  $("#restart").onclick = () => load(S.level);
+  $("#pause").onclick = () =>
+    S.paused
+      ? close()
+      : modal("Game Paused", "Trucks, sand and return timers are paused.");
+  $("#resume").onclick = () => action();
+  $("#sound").onclick = () => {
+    sound = !sound;
+    toast(sound ? "Sound on" : "Sound off");
+  };
+  $("#hint").onclick = () => {
+    let bottom = new Set(
+        Array.from(S.grid.slice(95 * 144))
+          .filter(Boolean)
+          .map((c) => c - 1),
+      ),
+      legal = S.trucks.filter((t) => t.state === "park" && !blockers(t).length),
+      t = legal.find((t) => bottom.has(t.c)) || legal[0];
+    if (!t) return toast("No clear truck. Wait, undo or restart.");
+    S.hint = t.id;
+    S.hintTime = 4;
+    toast(
+      bottom.has(t.c)
+        ? "Highlighted truck matches exposed sand."
+        : "Move the highlighted truck to clear a path.",
+    );
+  };
+  $("#levels").onclick = () => {
+    modal("Choose a Picture", "");
+    let grid = document.createElement("div");
+    grid.className = "grid";
+    ART.forEach((a, i) => {
+      let b = document.createElement("button"),
+        img = document.createElement("img"),
+        label = document.createElement("span");
+      b.type = "button";
+      img.src = "assets/art/" + (i + 1) + ".png";
+      img.alt = a.title;
+      label.textContent = i + 1 + ". " + a.title;
+      b.append(img, label);
+      b.onclick = () => load(i);
+      grid.append(b);
+    });
+    $("#body").append(grid);
+  };
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden && !S.paused)
+      modal("Paused", "Automatically paused when switching windows.");
+  });
+  window.Sandfall = {
+    get state() {
+      return S;
+    },
+    load,
+    step,
+    draw,
+    dispatch,
+    blockers,
+    undo,
+    setSound(v) {
+      sound = v;
+    },
+  };
+  let saved = 0;
+  try {
+    saved = Number(localStorage.getItem("sandfall-refined-level")) || 0;
+  } catch (e) {}
+  load(saved);
+  requestAnimationFrame(frame);
+  toast("All trucks are visible. Each carries at most 900 grains.");
+})();
